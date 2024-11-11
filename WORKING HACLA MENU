@@ -1,0 +1,102 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("User InputService")
+
+-- Create the ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = PlayerGui
+
+-- Create the main menu frame
+local menuFrame = Instance.new("Frame")
+menuFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+menuFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+menuFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+menuFrame.Visible = false
+menuFrame.Parent = screenGui
+
+-- Create buttons
+local function createButton(name, position, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0.2, 0)
+    button.Position = position
+    button.Text = name
+    button.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    button.Parent = menuFrame
+
+    button.MouseButton1Click:Connect(callback)
+end
+
+-- Lock On function
+local function lockOn()
+    local closestPlayer = nil
+    local closestDistance = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestPlayer = player
+            end
+        end
+    end
+
+    if closestPlayer then
+        print("Locked on to: " .. closestPlayer.Name)
+        -- Add your lock-on functionality here (e.g., aim at the player)
+    end
+end
+
+-- Wallhack function
+local function wallhack()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = player.Character
+            highlight.FillColor = Color3.fromRGB(0, 0, 255)
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        end
+    end
+end
+
+-- Fly function
+local flying = false
+local bodyVelocity
+
+local function toggleFly()
+    flying = not flying
+    if flying then
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
+        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+        bodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
+    else
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+    end
+end
+
+-- Create buttons
+createButton("Lock On", UDim2.new(0, 0, 0, 0), lockOn)
+createButton("Wallhack", UDim2.new(0, 0, 0.2, 0), wallhack)
+createButton("Fly", UDim2.new(0, 0, 0.4, 0), toggleFly)
+
+-- Create close/open menu button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+toggleButton.Position = UDim2.new(0.9, 0, 0, 0)
+toggleButton.Text = "Menu"
+toggleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+toggleButton.Parent = screenGui
+
+toggleButton.MouseButton1Click:Connect(function()
+    menuFrame.Visible = not menuFrame.Visible
+end)
+
+-- Make the menu close when clicked outside
+menuFrame.MouseButton1Click:Connect(function()
+    menuFrame.Visible = false
+end)
